@@ -1,0 +1,523 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans);color:var(--color-text-primary)}
+.app{padding:1rem 0}
+.vtabs{display:flex;gap:4px;margin-bottom:1rem;background:var(--color-background-secondary);padding:4px;border-radius:var(--border-radius-lg)}
+.vtab{flex:1;padding:7px 8px;border:none;background:transparent;cursor:pointer;border-radius:var(--border-radius-md);font-size:12px;color:var(--color-text-secondary);transition:all .15s}
+.vtab.active{background:var(--color-background-primary);color:var(--color-text-primary);font-weight:500;border:0.5px solid var(--color-border-tertiary)}
+.nav-btn{background:none;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:5px 12px;cursor:pointer;font-size:13px;color:var(--color-text-secondary)}
+.nav-btn:hover{background:var(--color-background-secondary)}
+.gen-btn{width:100%;padding:10px;background:#1D9E75;color:#fff;border:none;border-radius:var(--border-radius-md);font-size:13px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:1rem}
+.gen-btn:hover{background:#0F6E56}
+.gen-btn:disabled{background:var(--color-background-secondary);color:var(--color-text-secondary);cursor:not-allowed}
+.prog-bar{height:4px;background:var(--color-background-secondary);border-radius:2px;margin-bottom:1rem;overflow:hidden;display:none}
+.prog-fill{height:100%;background:#1D9E75;border-radius:2px;transition:width .3s}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.cal-hd{text-align:center;font-size:11px;font-weight:500;color:var(--color-text-secondary);padding:4px 0}
+.cal-hd.sun{color:#E24B4A}.cal-hd.sat{color:#378ADD}
+.cal-day{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:4px;min-height:60px;cursor:pointer;transition:border-color .15s}
+.cal-day:hover{border-color:#1D9E75}
+.cal-day.sel{border:1.5px solid #1D9E75}
+.cal-day.today{background:#E1F5EE}
+.cal-day.empty{background:transparent;border-color:transparent;cursor:default}
+.dn{font-size:11px;font-weight:500}.dn.sun{color:#E24B4A}.dn.sat{color:#378ADD}
+.dm{font-size:9px;color:var(--color-text-secondary);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dm.has{color:var(--color-text-primary)}
+.detail-wrap{margin-top:1rem}
+.card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1rem 1.25rem;margin-bottom:10px}
+.card-title{font-size:14px;font-weight:500;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.badge{font-size:10px;padding:2px 8px;border-radius:20px;font-weight:500}
+.bl{background:#E1F5EE;color:#085041}
+.bm{background:#E6F1FB;color:#0C447C}
+.bs{background:#FAEEDA;color:#633806}
+.bq{background:#FBEAF0;color:#72243E}
+.dish-wrap{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:10px 12px;margin-bottom:8px}
+.dish-wrap:last-child{margin-bottom:0}
+.dish-top{display:flex;align-items:center;gap:6px;margin-bottom:6px}
+.dish-name{font-size:13px;font-weight:500;flex:1}
+.dish-meta{display:flex;gap:10px;font-size:11px;color:var(--color-text-secondary);margin-bottom:8px;flex-wrap:wrap}
+.toggle-btn{font-size:11px;color:#1D9E75;background:none;border:none;cursor:pointer;padding:0;display:flex;align-items:center;gap:3px}
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px;padding-top:8px;border-top:0.5px solid var(--color-border-tertiary)}
+.detail-col h4{font-size:11px;font-weight:500;color:var(--color-text-secondary);margin-bottom:6px}
+.ing-list{list-style:none;font-size:12px;line-height:1.9}
+.ing-list li::before{content:"·";margin-right:5px;color:#1D9E75}
+.step-list{list-style:none;font-size:12px;line-height:1.8;counter-reset:s}
+.step-list li{counter-increment:s;padding-left:18px;position:relative;margin-bottom:2px}
+.step-list li::before{content:counter(s);position:absolute;left:0;top:1px;background:#1D9E75;color:#fff;width:14px;height:14px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:500}
+.nut-row{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:8px;padding-top:8px;border-top:0.5px solid var(--color-border-tertiary)}
+.nut-cell{text-align:center;background:var(--color-background-primary);border-radius:var(--border-radius-md);padding:6px 4px}
+.nut-val{font-size:14px;font-weight:500}
+.nut-lbl{font-size:9px;color:var(--color-text-secondary);margin-top:1px}
+.day-nut{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:10px 12px;margin-top:8px}
+.bar-row{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.bar-row:last-child{margin-bottom:0}
+.bar-lbl{font-size:11px;color:var(--color-text-secondary);width:60px;flex-shrink:0}
+.bar-bg{flex:1;height:6px;background:var(--color-background-primary);border-radius:3px;overflow:hidden}
+.bar-fill{height:100%;border-radius:3px}
+.bar-val{font-size:11px;width:70px;text-align:right}
+.empty-hint{text-align:center;padding:2rem 1rem;color:var(--color-text-secondary);font-size:13px;line-height:1.8}
+.spinner{width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:inline-block}
+@keyframes spin{to{transform:rotate(360deg)}}
+.week-nav{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.week-lbl{font-size:13px;font-weight:500;flex:1;text-align:center}
+.week-day-card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:10px 14px;margin-bottom:8px}
+.wdc-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.wdc-date{font-size:13px;font-weight:500}
+.wdc-cost{font-size:11px;background:#E1F5EE;color:#085041;padding:2px 8px;border-radius:20px}
+.wdc-meals{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.wdc-col h5{font-size:10px;font-weight:500;color:var(--color-text-secondary);margin-bottom:4px}
+.wdc-dish{font-size:12px;margin-bottom:2px}
+.shop-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.shop-ttl{font-size:14px;font-weight:500}
+.shop-total{font-size:13px;background:#E1F5EE;color:#085041;padding:4px 12px;border-radius:20px;font-weight:500}
+.shop-cat{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:10px 14px;margin-bottom:8px}
+.shop-cat-title{font-size:12px;font-weight:500;color:var(--color-text-secondary);margin-bottom:8px}
+.shop-item{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:0.5px solid var(--color-border-tertiary);font-size:13px}
+.shop-item:last-child{border-bottom:none}
+.chk{width:16px;height:16px;border:0.5px solid var(--color-border-secondary);border-radius:4px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.chk.on{background:#1D9E75;border-color:#1D9E75;color:#fff}
+.iname{flex:1}
+.iqty{color:var(--color-text-secondary);font-size:12px}
+.iprc{color:#1D9E75;font-size:12px;min-width:45px;text-align:right}
+</style>
+
+<div class="app">
+<h2 style="position:absolute;left:-9999px">6月の献立プランナー</h2>
+
+<div class="vtabs">
+  <button class="vtab active" onclick="sv('cal',this)"><i class="ti ti-calendar" aria-hidden="true"></i> カレンダー</button>
+  <button class="vtab" onclick="sv('week',this)"><i class="ti ti-layout-rows" aria-hidden="true"></i> 週ごと</button>
+  <button class="vtab" onclick="sv('shop',this)"><i class="ti ti-shopping-cart" aria-hidden="true"></i> 買い物</button>
+</div>
+
+<div id="v-cal">
+  <div class="cal-grid" style="margin-bottom:3px">
+    <div class="cal-hd sun">日</div><div class="cal-hd">月</div><div class="cal-hd">火</div><div class="cal-hd">水</div><div class="cal-hd">木</div><div class="cal-hd">金</div><div class="cal-hd sat">土</div>
+  </div>
+  <div class="cal-grid" id="calDays" style="margin-bottom:1rem"></div>
+  <button class="gen-btn" id="genBtn" onclick="genAll()">
+    <i class="ti ti-sparkles" aria-hidden="true"></i> AIで6月の献立をすべて生成する
+  </button>
+  <div class="prog-bar" id="prog"><div class="prog-fill" id="progFill"></div></div>
+  <div id="dayDetail"></div>
+</div>
+
+<div id="v-week" style="display:none">
+  <div class="week-nav">
+    <button class="nav-btn" onclick="cw(-1)"><i class="ti ti-chevron-left" aria-hidden="true"></i></button>
+    <span class="week-lbl" id="weekLbl"></span>
+    <button class="nav-btn" onclick="cw(1)"><i class="ti ti-chevron-right" aria-hidden="true"></i></button>
+  </div>
+  <div id="weekContent"></div>
+</div>
+
+<div id="v-shop" style="display:none">
+  <div id="shopContent"></div>
+</div>
+</div>
+
+<script>
+const DOW0=0,JUNE_DAYS=30,TODAY_D=3;
+const DJA=['日','月','火','水','木','金','土'];
+
+const POOL={
+  lunch:[
+    {name:'鮭おにぎり定食',time:20,cost:280,nut:{cal:480,prot:22,fat:8,carb:72},
+     ing:['鮭フレーク 50g','ご飯 300g','レタス 2枚','トマト 1/2個','豆腐 150g','だし 200ml','乾燥わかめ 少々'],
+     steps:['鮭フレークを温かいご飯に混ぜ、三角おにぎりに握る','レタスをちぎり、トマトを一口大に切る','小鍋にだしを沸かし豆腐とわかめを入れ、みそを溶いて汁物に']},
+    {name:'親子丼',time:20,cost:250,nut:{cal:520,prot:30,fat:14,carb:68},
+     ing:['鶏もも肉 150g','卵 2個','玉ねぎ 1/2個','だし 100ml','ご飯 300g'],
+     steps:['鶏肉は一口大、玉ねぎは薄切りにする','だし・醤油・みりんで鶏肉と玉ねぎを中火で煮る','溶き卵を回しかけ半熟で火を止めてご飯にかける']},
+    {name:'かけうどん',time:15,cost:200,nut:{cal:450,prot:18,fat:6,carb:80},
+     ing:['うどん 2玉','だし 500ml','ゆで卵 1個','ねぎ 少々'],
+     steps:['だしを沸かし醤油・みりん・塩で味を調える','うどんを温め器に盛りつける','卵を半分に切ってのせ、ねぎを散らす']},
+    {name:'チャーハン',time:20,cost:220,nut:{cal:500,prot:20,fat:16,carb:70},
+     ing:['ご飯 300g（冷ご飯推奨）','卵 2個','ハム 50g','長ねぎ 大さじ2','ごま油 少々'],
+     steps:['卵をご飯に絡めておく','フライパンを強火にかけハムとねぎを炒める','ご飯を加え強火で手早く炒め、醤油・塩・こしょうで味付け']},
+    {name:'そぼろ丼',time:20,cost:250,nut:{cal:510,prot:28,fat:14,carb:66},
+     ing:['鶏ひき肉 150g','卵 2個','さやえんどう 少々','ご飯 300g'],
+     steps:['ひき肉を醤油・みりん・砂糖で甘辛く炒り煮にする','卵は炒り卵にする','さやえんどうを塩茹でしご飯に三色で盛り付ける']},
+    {name:'野菜たっぷり焼きそば',time:20,cost:230,nut:{cal:490,prot:22,fat:14,carb:72},
+     ing:['焼きそば麺 2玉','豚こま 100g','キャベツ 1/4個','もやし 1袋','ソース・醤油 適量'],
+     steps:['キャベツをざく切り、豚肉を一口大にする','豚肉を炒め野菜を加えしんなりするまで炒める','麺を加えほぐしながらソースで味付け']},
+    {name:'炊き込みご飯定食',time:30,cost:260,nut:{cal:490,prot:18,fat:6,carb:82},
+     ing:['米 2合','鶏もも肉 100g','人参 1/3本','ごぼう 1/4本','油揚げ 1枚','だし 適量'],
+     steps:['具材を細かく切り下味をつける','米・具材・だしを炊飯器に入れ通常通り炊く','蒸らして全体を混ぜ、みそ汁と一緒に盛る']},
+    {name:'ざるそば定食',time:15,cost:220,nut:{cal:400,prot:16,fat:4,carb:78},
+     ing:['そば（乾）160g','めんつゆ 適量','きゅうり 1/2本','ゆで卵 1個','ねぎ・わさび 少々'],
+     steps:['そばを茹でて冷水でしめる','きゅうりを千切り、卵を半熟ゆでにする','器に盛り、めんつゆ・薬味を添える']},
+    {name:'豚汁定食',time:20,cost:240,nut:{cal:470,prot:20,fat:10,carb:70},
+     ing:['豚こま 100g','大根 1/6本','人参 1/4本','こんにゃく 1/4枚','ご飯 300g','だし 500ml'],
+     steps:['野菜・こんにゃくを一口大に切る','豚肉を炒め野菜を加えてだしで煮る','柔らかくなったらみそを溶き、ご飯と一緒に盛る']},
+    {name:'ビビンバ風丼',time:20,cost:260,nut:{cal:510,prot:24,fat:12,carb:74},
+     ing:['牛こま 100g','ほうれん草 1/2束','人参 1/4本','もやし 1/2袋','卵 1個','ご飯 300g'],
+     steps:['ほうれん草・もやしを茹で各々調味','人参を千切りにして炒める','牛肉を甘辛く炒めご飯に具材を盛り卵をのせる']},
+    {name:'天津飯',time:20,cost:240,nut:{cal:480,prot:18,fat:14,carb:66},
+     ing:['卵 3個','カニかまぼこ 4本','ご飯 300g','だし 150ml','片栗粉 小さじ1'],
+     steps:['カニかまを割きほぐし卵と混ぜる','フライパンで半熟の卵焼きを作る','だし・醤油・酢で甘酢あんを作りかけて完成']},
+    {name:'カレーうどん',time:20,cost:230,nut:{cal:500,prot:20,fat:10,carb:82},
+     ing:['うどん 2玉','豚こま 80g','玉ねぎ 1/2個','カレールー 1かけ','だし 500ml'],
+     steps:['玉ねぎを薄切り、豚肉を一口大にする','だしで豚肉と玉ねぎを煮てカレールーを溶かす','うどんを温めてカレー汁をかける']},
+  ],
+  main:[
+    {name:'豚の生姜焼き',badge:'main',time:15,cost:320,nut:{cal:380,prot:28,fat:18,carb:12},
+     ing:['豚こま or ロース薄切り 200g','玉ねぎ 1/2個','しょうが すりおろし1片分','醤油・みりん 各大さじ2'],
+     steps:['玉ねぎを薄切り、しょうがをすりおろす','豚肉を中火で炒め、玉ねぎを加えしんなりさせる','醤油・みりん・しょうがを加えて全体に絡め強火で仕上げる']},
+    {name:'さばの味噌煮',badge:'main',time:20,cost:280,nut:{cal:340,prot:24,fat:16,carb:10},
+     ing:['さば 2切れ','しょうが 1片','長ねぎ 1/2本','みそ 大さじ2','みりん・砂糖 各大さじ1'],
+     steps:['さばに熱湯を回しかけ臭みを取り水気を拭く','鍋に水・みりん・砂糖・しょうがを煮立てさばを入れる','落し蓋をして中火10分煮て、みそを溶き入れさらに2分煮詰める']},
+    {name:'鶏のから揚げ',badge:'main',time:25,cost:300,nut:{cal:420,prot:32,fat:22,carb:18},
+     ing:['鶏もも肉 300g','しょうが・にんにく 各1片','醤油・酒 各大さじ1','片栗粉 大さじ3','揚げ油 適量'],
+     steps:['鶏肉を一口大に切り、醤油・酒・しょうが・にんにくで15分下味をつける','片栗粉をしっかりまぶし余分な粉を払う','170℃の油で5〜6分揚げ、油を切って完成']},
+    {name:'鮭のホイル焼き',badge:'main',time:20,cost:300,nut:{cal:300,prot:28,fat:14,carb:8},
+     ing:['鮭 2切れ','玉ねぎ 1/2個','えのき 1袋','バター 小さじ2','塩・こしょう 少々'],
+     steps:['アルミホイルに薄切り玉ねぎとえのきを敷く','鮭に塩・こしょうしてのせ、バターをのせホイルを閉じる','フライパンに少量の水を入れ蓋をして中火15分蒸し焼き']},
+    {name:'肉じゃが',badge:'main',time:30,cost:280,nut:{cal:360,prot:20,fat:10,carb:42},
+     ing:['牛こま 150g','じゃがいも 3個','玉ねぎ 1個','糸こんにゃく 1/2袋','だし 200ml'],
+     steps:['じゃがいも・玉ねぎを一口大、こんにゃくをちぎる','フライパンに油を熱し牛肉を炒め野菜を加える','だし・醤油・みりん・砂糖を加え落し蓋で中火20分煮る']},
+    {name:'やさしい麻婆豆腐',badge:'main',time:20,cost:260,nut:{cal:280,prot:24,fat:14,carb:10},
+     ing:['絹豆腐 1丁','鶏ひき肉 150g','長ねぎ 1/2本','しょうが 1片','だし 100ml'],
+     steps:['豆腐を1.5cm角に切り熱湯でさっと温めておく','ひき肉・しょうが・ねぎを炒め醤油・みりん・少量の豆板醤で味付け','だしを加え豆腐を入れ、水溶き片栗粉でとろみをつける']},
+    {name:'鶏の照り焼き',badge:'main',time:20,cost:280,nut:{cal:350,prot:30,fat:16,carb:14},
+     ing:['鶏もも肉 2枚（300g）','醤油・みりん・砂糖 各大さじ2','にんにく（お好みで）1片'],
+     steps:['鶏肉の皮目をフォークで数か所刺す','フライパンで皮目を下にして中火で7分、裏返して5分焼く','合わせ調味料を加えて全体に絡め、照りが出るまで煮詰める']},
+    {name:'ぶりの照り焼き',badge:'main',time:15,cost:320,nut:{cal:340,prot:26,fat:18,carb:8},
+     ing:['ぶり 2切れ','醤油・みりん・酒 各大さじ2','片栗粉 少々'],
+     steps:['ぶりに薄く片栗粉をはたく','フライパンに油を熱し中火で両面各3分焼く','合わせ調味料を加えて絡め、照りが出たら火を止める']},
+    {name:'豆腐ハンバーグ',badge:'main',time:25,cost:240,nut:{cal:300,prot:22,fat:14,carb:18},
+     ing:['豚ひき肉 150g','木綿豆腐 1/2丁','玉ねぎ 1/4個（みじん切り）','パン粉 大さじ2','卵 1個'],
+     steps:['豆腐をキッチンペーパーで水切りしひき肉・玉ねぎ・卵・パン粉とよく混ぜる','小判型に成形しフライパンで中火3分ずつ両面焼く','醤油・みりん・だし少量でソースを作りかける']},
+    {name:'鶏と大根の煮物',badge:'main',time:30,cost:260,nut:{cal:280,prot:22,fat:10,carb:20},
+     ing:['鶏もも肉 200g','大根 1/3本','だし 300ml','醤油・みりん 各大さじ2'],
+     steps:['鶏肉を一口大、大根を2cm厚の半月切りにする','大根はあらかじめ下茹でしておく','鍋でだし・調味料を煮立て鶏肉と大根を入れ落し蓋で20分煮る']},
+    {name:'さんまの塩焼き',badge:'main',time:15,cost:260,nut:{cal:300,prot:22,fat:18,carb:0},
+     ing:['さんま 2尾','塩 少々','大根おろし 適量','すだち（or レモン） 1個'],
+     steps:['さんまに塩を振り10分おいて水気を拭く','魚焼きグリルで中火12〜15分、途中で裏返す','器に盛り、大根おろしとすだちを添える']},
+    {name:'豚バラと白菜の蒸し',badge:'main',time:20,cost:280,nut:{cal:320,prot:22,fat:18,carb:10},
+     ing:['豚バラ薄切り 200g','白菜 1/4個','ごま油 小さじ1','ポン酢 適量'],
+     steps:['白菜を5cm幅に切り、豚バラは半分の長さにする','鍋に白菜と豚バラを交互に重ね少量の水とごま油をかける','蓋をして中火10分蒸し煮にし、ポン酢で食べる']},
+  ],
+  side:[
+    {name:'ほうれん草のおひたし',badge:'side',time:8,cost:80,nut:{cal:45,prot:4,fat:1,carb:4},
+     ing:['ほうれん草 1束','だし醤油 大さじ1','鰹節 少々'],
+     steps:['ほうれん草を塩を加えた熱湯でさっと1分茹でる','水に取って絞り、3cm幅に切る','だし醤油をかけ鰹節をのせる']},
+    {name:'大根のなます',badge:'side',time:10,cost:60,nut:{cal:40,prot:1,fat:0,carb:9},
+     ing:['大根 1/4本','人参 1/3本','酢 大さじ2','砂糖 大さじ1','塩 少々'],
+     steps:['大根・人参を千切りにして塩をふりしんなりさせる','水気を手でしっかり絞る','酢・砂糖を混ぜ合わせ野菜を和え10分以上置く']},
+    {name:'キャベツとツナのサラダ',badge:'side',time:8,cost:80,nut:{cal:120,prot:8,fat:7,carb:8},
+     ing:['キャベツ 1/4個','ツナ缶 1缶','コーン缶 大さじ3','マヨネーズ 大さじ1.5'],
+     steps:['キャベツを千切りにして洗い水気をよく切る','ツナ（油切り）とコーンと和える','マヨネーズで和え塩・こしょうで味を調える']},
+    {name:'ひじきの煮物',badge:'side',time:15,cost:60,nut:{cal:90,prot:4,fat:3,carb:12},
+     ing:['乾燥ひじき 15g','油揚げ 1/2枚','人参 1/4本','だし 100ml','醤油・みりん 各大さじ1'],
+     steps:['ひじきをたっぷりの水で15分戻す','油揚げは短冊切り、人参は千切りにする','フライパンに油を熱し炒め、だし・調味料で汁気がなくなるまで煮る']},
+    {name:'きゅうりとわかめの酢の物',badge:'side',time:8,cost:50,nut:{cal:30,prot:1,fat:0,carb:6},
+     ing:['きゅうり 1本','乾燥わかめ 大さじ1','酢 大さじ2','砂糖 小さじ2','塩 少々'],
+     steps:['きゅうりを薄切りにして塩もみし10分置く','わかめを水で戻す','きゅうりの水気を絞り、わかめと合わせ甘酢で和える']},
+    {name:'ブロッコリーのごま和え',badge:'side',time:10,cost:70,nut:{cal:80,prot:5,fat:4,carb:7},
+     ing:['ブロッコリー 1/2株','すりごま 大さじ1.5','醤油 小さじ2','砂糖 小さじ1'],
+     steps:['ブロッコリーを小房に分けて塩茹でする（約3分）','茹でたらざるにあけ冷ます','すりごま・醤油・砂糖を混ぜてブロッコリーを和える']},
+    {name:'小松菜と油揚げの炒め',badge:'side',time:10,cost:70,nut:{cal:80,prot:6,fat:4,carb:4},
+     ing:['小松菜 1袋','油揚げ 1枚','だし醤油 大さじ1','ごま油 少々'],
+     steps:['小松菜を4cm幅、油揚げを短冊切りにする','ごま油でさっと炒める','だし醤油をまわしかけて全体に絡め火を止める']},
+    {name:'かぼちゃの煮物',badge:'side',time:15,cost:80,nut:{cal:100,prot:2,fat:2,carb:18},
+     ing:['かぼちゃ 1/6個','だし 150ml','醤油・みりん 各大さじ1','砂糖 小さじ1'],
+     steps:['かぼちゃを2cm角のひと口大に切る','鍋にだし・調味料を煮立て皮を下にしてかぼちゃを並べる','落し蓋で中火12〜15分煮て汁気が少なくなったら火を止める']},
+    {name:'れんこんのきんぴら',badge:'side',time:12,cost:80,nut:{cal:90,prot:2,fat:2,carb:16},
+     ing:['れんこん 150g','唐辛子 少々','醤油・みりん 各大さじ1','ごま油 小さじ1'],
+     steps:['れんこんを薄切りにして酢水にさらす','ごま油と唐辛子で炒める','醤油・みりんを加えて汁気がなくなるまで炒め煮する']},
+    {name:'冷奴',badge:'side',time:3,cost:60,nut:{cal:70,prot:7,fat:4,carb:2},
+     ing:['絹豆腐 1/2丁','ねぎ 少々','しょうが 少々','だし醤油 大さじ1'],
+     steps:['豆腐を食べやすく切って器に盛る','ねぎ・しょうがをのせる','だし醤油をかけて完成']},
+    {name:'白菜の浅漬け',badge:'side',time:5,cost:50,nut:{cal:20,prot:1,fat:0,carb:4},
+     ing:['白菜 1/8個','塩 小さじ1','昆布 5cm','唐辛子 少々'],
+     steps:['白菜をざく切りにして塩をまぶす','昆布・唐辛子と一緒に袋や容器に入れる','重しをして冷蔵庫で30分以上漬ける']},
+    {name:'インゲンのごま和え',badge:'side',time:10,cost:60,nut:{cal:60,prot:3,fat:3,carb:6},
+     ing:['さやいんげん 150g','すりごま 大さじ1','醤油・砂糖 各小さじ1'],
+     steps:['いんげんを塩茹でして冷水にとる','斜め切りにする','すりごま・醤油・砂糖で和える']},
+  ],
+  soup:[
+    {name:'なめこのみそ汁',badge:'soup',time:8,cost:60,nut:{cal:60,prot:5,fat:2,carb:5},
+     ing:['なめこ 1袋（100g）','絹豆腐 100g','だし 400ml','みそ 大さじ1.5'],
+     steps:['だしを中火で温める','豆腐を2cm角に切って加え、なめこも入れひと煮立ちさせる','火を弱めみそを溶き入れ、沸騰させずに火を止める']},
+    {name:'豆腐とわかめのみそ汁',badge:'soup',time:8,cost:60,nut:{cal:55,prot:5,fat:2,carb:4},
+     ing:['木綿豆腐 100g','乾燥わかめ 大さじ1','だし 400ml','みそ 大さじ1.5'],
+     steps:['わかめを水で戻す','だしを沸かし豆腐を一口大に切って加える','わかめを入れひと煮立ちさせ、みそを溶いて完成']},
+    {name:'玉ねぎと油揚げのみそ汁',badge:'soup',time:8,cost:50,nut:{cal:55,prot:3,fat:2,carb:7},
+     ing:['玉ねぎ 1/2個','油揚げ 1/2枚','だし 400ml','みそ 大さじ1.5'],
+     steps:['玉ねぎを薄切り、油揚げを短冊切りにする','だしで玉ねぎが柔らかくなるまで3分煮る','油揚げを加えひと煮立ちさせみそを溶く']},
+    {name:'あさりのみそ汁',badge:'soup',time:10,cost:100,nut:{cal:50,prot:6,fat:1,carb:4},
+     ing:['あさり（砂抜き済）150g','だし 400ml','みそ 大さじ1.5','ねぎ 少々'],
+     steps:['だし（または水）とあさりを鍋に入れ中火にかける','あさりが口を開いたらアクを取り除く','みそを溶いて器に盛りねぎを散らす']},
+    {name:'豆腐と小松菜のみそ汁',badge:'soup',time:8,cost:70,nut:{cal:55,prot:5,fat:2,carb:4},
+     ing:['絹豆腐 100g','小松菜 1/3束','だし 400ml','みそ 大さじ1.5'],
+     steps:['小松菜を2cm幅に切る','だしを沸かし小松菜を入れ1分煮る','豆腐を加えひと煮立ちさせみそを溶く']},
+    {name:'白菜とえのきのすまし汁',badge:'soup',time:8,cost:60,nut:{cal:30,prot:2,fat:0,carb:5},
+     ing:['白菜 1/8個','えのき 1/2袋','だし 400ml','醤油 小さじ1','塩 少々'],
+     steps:['白菜を一口大、えのきを石づきを取ってほぐす','だしを沸かし白菜とえのきを入れ2〜3分煮る','醤油と塩で味を調える']},
+    {name:'けんちん汁',badge:'soup',time:15,cost:80,nut:{cal:80,prot:4,fat:2,carb:12},
+     ing:['木綿豆腐 1/4丁','大根 1/6本','人参 1/4本','ごぼう 1/4本','だし 500ml'],
+     steps:['野菜を一口大にし豆腐を手でちぎる','ごま油で炒め野菜に油を回す','だしを注ぎ柔らかくなったら醤油・みりん・塩で味付け']},
+    {name:'とん汁',badge:'soup',time:20,cost:100,nut:{cal:120,prot:8,fat:6,carb:10},
+     ing:['豚こま 80g','大根 1/6本','人参 1/4本','こんにゃく 1/4枚','だし 500ml'],
+     steps:['野菜・こんにゃくを一口大に切る','豚肉を炒め野菜を加える','だしで全体を煮てみそを溶き、好みでしょうがを入れる']},
+    {name:'かぼちゃのみそ汁',badge:'soup',time:10,cost:60,nut:{cal:65,prot:3,fat:1,carb:12},
+     ing:['かぼちゃ 1/8個','だし 400ml','みそ 大さじ1.5'],
+     steps:['かぼちゃを1.5cm角に切る','だしで柔らかくなるまで5〜6分煮る','みそを溶いて完成']},
+    {name:'長ねぎと麩のすまし汁',badge:'soup',time:8,cost:50,nut:{cal:35,prot:2,fat:0,carb:6},
+     ing:['長ねぎ 1/2本','麩 6個','だし 400ml','醤油 小さじ1','塩 少々'],
+     steps:['長ねぎを斜め薄切りにする','だしを沸かしねぎを加え1分煮る','麩を加えひと煮立ちさせ醤油・塩で味を調える']},
+  ]
+};
+
+let meals={}, checks={}, exp={}, curWeek=0, selDay=null, isGen=false;
+
+function pick(arr,seed){return arr[seed%arr.length];}
+function genDay(d){
+  const s=d*7;
+  const mainIdx=s%POOL.main.length;
+  const sideIdx=(s*3)%POOL.side.length;
+  const side2Idx=(s*5+4)%POOL.side.length===sideIdx?(s*5+4+1)%POOL.side.length:(s*5+4)%POOL.side.length;
+  return {
+    lunch:pick(POOL.lunch,s+d%5),
+    dinner:[
+      POOL.main[mainIdx],
+      POOL.side[sideIdx],
+      POOL.side[side2Idx],
+      pick(POOL.soup,s+d%3)
+    ]
+  };
+}
+
+async function genAll(){
+  if(isGen)return;
+  isGen=true;
+  const btn=document.getElementById('genBtn');
+  const prog=document.getElementById('prog');
+  const fill=document.getElementById('progFill');
+  btn.disabled=true;
+  btn.innerHTML='<div class="spinner"></div> 生成中...';
+  prog.style.display='block';
+  for(let d=1;d<=JUNE_DAYS;d++){
+    meals[d]=genDay(d);
+    fill.style.width=Math.round(d/JUNE_DAYS*100)+'%';
+    renderCal();
+    await new Promise(r=>setTimeout(r,25));
+  }
+  isGen=false;
+  btn.innerHTML='<i class="ti ti-refresh" aria-hidden="true"></i> 再生成する';
+  btn.disabled=false;
+  if(selDay)renderDetail(selDay);
+  renderWeek();
+  renderShop();
+}
+
+function renderCal(){
+  const c=document.getElementById('calDays');
+  let h='';
+  for(let i=0;i<DOW0;i++)h+=`<div class="cal-day empty"></div>`;
+  for(let d=1;d<=JUNE_DAYS;d++){
+    const dow=(DOW0+d-1)%7;
+    const m=meals[d];
+    h+=`<div class="cal-day${d===TODAY_D?' today':''}${d===selDay?' sel':''}" onclick="clickDay(${d})">
+      <div class="dn${dow===0?' sun':dow===6?' sat':''}">${d}</div>
+      ${m?`<div class="dm has">${m.lunch.name.slice(0,6)}</div><div class="dm has">${m.dinner[0].name.slice(0,6)}</div>`:`<div class="dm">未生成</div>`}
+    </div>`;
+  }
+  c.innerHTML=h;
+}
+
+function clickDay(d){selDay=d;renderCal();renderDetail(d);}
+
+function renderDetail(d){
+  const el=document.getElementById('dayDetail');
+  if(!meals[d]){el.innerHTML=`<div class="empty-hint"><i class="ti ti-sparkles" aria-hidden="true"></i><br>まず献立を生成してください</div>`;return;}
+  const m=meals[d];
+  const dow=(DOW0+d-1)%7;
+  let dayNut={cal:0,prot:0,fat:0,carb:0};
+  [m.lunch,...m.dinner].forEach(ds=>Object.keys(dayNut).forEach(k=>dayNut[k]+=ds.nut[k]));
+  Object.keys(dayNut).forEach(k=>dayNut[k]=Math.round(dayNut[k]));
+  const targets={cal:1600,prot:80,fat:60,carb:220};
+  const nColors={cal:'#1D9E75',prot:'#378ADD',fat:'#EF9F27',carb:'#D4537E'};
+  const nLabels={cal:'カロリー',prot:'たんぱく質',fat:'脂質',carb:'炭水化物'};
+  const nUnits={cal:'kcal',prot:'g',fat:'g',carb:'g'};
+
+  let h=`<div class="card">
+    <div class="card-title"><i class="ti ti-calendar" aria-hidden="true"></i> 6月${d}日（${DJA[dow]}）</div>
+    <div style="font-size:12px;font-weight:500;color:var(--color-text-secondary);margin-bottom:8px;display:flex;align-items:center;gap:4px"><i class="ti ti-sun" aria-hidden="true"></i> 昼ごはん</div>
+    ${renderDish(m.lunch,'l'+d,d,'lunch')}
+    <div style="font-size:12px;font-weight:500;color:var(--color-text-secondary);margin:10px 0 8px;display:flex;align-items:center;gap:4px"><i class="ti ti-moon" aria-hidden="true"></i> 夕ごはん</div>
+    ${m.dinner.map((ds,i)=>renderDish(ds,'d'+d+'_'+i,d,ds.badge)).join('')}
+    <div class="day-nut">
+      <div style="font-size:11px;font-weight:500;color:var(--color-text-secondary);margin-bottom:8px">この日の合計栄養（昼＋夕）</div>
+      ${Object.entries(dayNut).map(([k,v])=>{
+        const pct=Math.min(100,Math.round(v/targets[k]*100));
+        return `<div class="bar-row">
+          <span class="bar-lbl">${nLabels[k]}</span>
+          <div class="bar-bg"><div class="bar-fill" style="width:${pct}%;background:${nColors[k]}"></div></div>
+          <span class="bar-val" style="color:${nColors[k]}">${v}${nUnits[k]}</span>
+        </div>`;
+      }).join('')}
+    </div>
+  </div>`;
+  el.innerHTML=h;
+}
+
+function renderDish(ds,id,day,badge){
+  const bl=badge==='main'?'bm':badge==='side'?'bs':badge==='soup'?'bq':'bl';
+  const bl2=badge==='main'?'主菜':badge==='side'?'副菜':badge==='soup'?'汁物':'昼食';
+  const open=exp[id];
+  return `<div class="dish-wrap">
+    <div class="dish-top">
+      <span class="badge ${bl}">${bl2}</span>
+      <span class="dish-name">${ds.name}</span>
+    </div>
+    <div class="dish-meta">
+      <span><i class="ti ti-clock" aria-hidden="true" style="font-size:11px"></i> 約${ds.time}分</span>
+      <span><i class="ti ti-currency-yen" aria-hidden="true" style="font-size:11px"></i> 約¥${ds.cost}</span>
+      <span><i class="ti ti-flame" aria-hidden="true" style="font-size:11px"></i> ${ds.nut.cal}kcal / たんぱく質${ds.nut.prot}g</span>
+    </div>
+    ${open?`<div class="detail-grid">
+      <div class="detail-col">
+        <h4><i class="ti ti-basket" aria-hidden="true" style="font-size:11px"></i> 材料（2人分）</h4>
+        <ul class="ing-list">${ds.ing.map(i=>`<li>${i}</li>`).join('')}</ul>
+      </div>
+      <div class="detail-col">
+        <h4><i class="ti ti-list-numbers" aria-hidden="true" style="font-size:11px"></i> 作り方</h4>
+        <ol class="step-list">${ds.steps.map(s=>`<li>${s}</li>`).join('')}</ol>
+      </div>
+    </div>`:''}
+    <div style="text-align:right;margin-top:4px">
+      <button class="toggle-btn" onclick="togExp('${id}',${day})">
+        <i class="ti ti-${open?'chevron-up':'chevron-down'}" aria-hidden="true" style="font-size:11px"></i>
+        ${open?'閉じる':'材料・作り方を見る'}
+      </button>
+    </div>
+  </div>`;
+}
+
+function togExp(id,day){exp[id]=!exp[id];renderDetail(day);}
+
+function sv(v,btn){
+  document.querySelectorAll('.vtab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  ['cal','week','shop'].forEach(n=>document.getElementById('v-'+n).style.display=n===v?'block':'none');
+  if(v==='week')renderWeek();
+  if(v==='shop')renderShop();
+}
+
+function cw(d){curWeek=Math.max(0,Math.min(3,curWeek+d));renderWeek();}
+
+function renderWeek(){
+  const el=document.getElementById('weekContent');
+  const lbl=document.getElementById('weekLbl');
+  const s=curWeek*7+1,e=Math.min(s+6,JUNE_DAYS);
+  lbl.textContent=`第${curWeek+1}週（6/${s}〜6/${e}）`;
+  if(!Object.keys(meals).length){el.innerHTML=`<div class="empty-hint"><i class="ti ti-sparkles" aria-hidden="true"></i><br>カレンダータブで献立を生成してください</div>`;return;}
+  let h='';
+  for(let d=s;d<=e;d++){
+    const dow=(DOW0+d-1)%7;
+    const m=meals[d];
+    if(!m)continue;
+    const dayCost=m.lunch.cost+m.dinner.reduce((s,x)=>s+x.cost,0);
+    h+=`<div class="week-day-card">
+      <div class="wdc-head">
+        <span class="wdc-date">6/${d}（${DJA[dow]}）</span>
+        <span class="wdc-cost">食材 約¥${dayCost}</span>
+      </div>
+      <div class="wdc-meals">
+        <div class="wdc-col">
+          <h5><i class="ti ti-sun" aria-hidden="true"></i> 昼</h5>
+          <div class="wdc-dish">${m.lunch.name}</div>
+          <div style="font-size:11px;color:var(--color-text-secondary)">${m.lunch.time}分・${m.lunch.nut.cal}kcal</div>
+        </div>
+        <div class="wdc-col">
+          <h5><i class="ti ti-moon" aria-hidden="true"></i> 夕</h5>
+          ${m.dinner.map(d=>`<div class="wdc-dish">${d.name}</div>`).join('')}
+        </div>
+      </div>
+    </div>`;
+  }
+  el.innerHTML=h;
+}
+
+function renderShop(){
+  const el=document.getElementById('shopContent');
+  const cats={
+    '肉・魚介':[
+      {n:'豚こま切れ肉',q:'1.8kg（週450g×4）',p:1440},
+      {n:'鶏もも肉',q:'1.6kg（週400g×4）',p:1280},
+      {n:'鶏・豚ひき肉',q:'600g（週150g×4）',p:480},
+      {n:'牛こま切れ肉',q:'600g',p:960},
+      {n:'さば切り身',q:'8切れ',p:1120},
+      {n:'鮭切り身',q:'8切れ',p:1600},
+      {n:'ぶり切り身',q:'4切れ',p:1280},
+      {n:'さんま',q:'4尾',p:800},
+      {n:'あさり（砂抜き済）',q:'2パック',p:800},
+      {n:'ツナ缶',q:'4缶',p:480},
+    ],
+    '野菜・きのこ':[
+      {n:'玉ねぎ',q:'16個',p:640},
+      {n:'大根',q:'4本',p:720},
+      {n:'人参',q:'8本',p:480},
+      {n:'じゃがいも',q:'12個',p:600},
+      {n:'キャベツ',q:'2個',p:400},
+      {n:'ほうれん草',q:'4束',p:480},
+      {n:'ブロッコリー',q:'4株',p:600},
+      {n:'小松菜',q:'4袋',p:400},
+      {n:'白菜',q:'1個',p:480},
+      {n:'かぼちゃ',q:'1個',p:400},
+      {n:'れんこん',q:'300g',p:400},
+      {n:'ごぼう',q:'2本',p:400},
+      {n:'えのき',q:'8袋',p:480},
+      {n:'なめこ',q:'4袋',p:400},
+      {n:'長ねぎ',q:'8本',p:480},
+      {n:'きゅうり',q:'8本',p:400},
+      {n:'もやし',q:'8袋',p:240},
+    ],
+    '豆腐・卵・加工品':[
+      {n:'木綿豆腐',q:'8丁',p:640},
+      {n:'絹豆腐',q:'8丁',p:640},
+      {n:'油揚げ',q:'8枚',p:480},
+      {n:'こんにゃく',q:'4枚',p:320},
+      {n:'乾燥ひじき',q:'60g',p:320},
+      {n:'卵',q:'40個（4パック）',p:880},
+    ],
+    '主食・乾物':[
+      {n:'米',q:'5kg',p:2000},
+      {n:'うどん',q:'8玉',p:400},
+      {n:'焼きそば麺',q:'8玉',p:480},
+      {n:'そば（乾）',q:'320g',p:400},
+      {n:'乾燥わかめ',q:'2袋',p:400},
+      {n:'麩',q:'1袋',p:200},
+      {n:'鮭フレーク',q:'2瓶',p:560},
+    ]
+  };
+  const total=Object.values(cats).flat().reduce((s,i)=>s+i.p,0);
+  let h=`<div class="shop-header"><span class="shop-ttl">6月の買い物リスト</span><span class="shop-total">月計 約¥${total.toLocaleString()}</span></div>
+  <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:12px">調味料・だし類を除く食材費の目安です</div>`;
+  Object.entries(cats).forEach(([cat,items])=>{
+    const catTotal=items.reduce((s,i)=>s+i.p,0);
+    h+=`<div class="shop-cat">
+      <div class="shop-cat-title">${cat} <span style="color:var(--color-text-tertiary)">— 約¥${catTotal.toLocaleString()}</span></div>`;
+    items.forEach((item,i)=>{
+      const key=cat+i;
+      h+=`<div class="shop-item">
+        <div class="chk ${checks[key]?'on':''}" onclick="togChk('${key}')" role="checkbox" aria-checked="${!!checks[key]}" aria-label="${item.n}">
+          ${checks[key]?`<i class="ti ti-check" style="font-size:10px" aria-hidden="true"></i>`:''}
+        </div>
+        <span class="iname" style="${checks[key]?'text-decoration:line-through;color:var(--color-text-secondary)':''}">${item.n}</span>
+        <span class="iqty">${item.q}</span>
+        <span class="iprc">¥${item.p.toLocaleString()}</span>
+      </div>`;
+    });
+    h+='</div>';
+  });
+  el.innerHTML=h;
+}
+
+function togChk(k){checks[k]=!checks[k];renderShop();}
+
+renderCal();
+document.getElementById('dayDetail').innerHTML=`<div class="empty-hint"><i class="ti ti-sparkles" aria-hidden="true"></i><br>まず「AIで6月の献立をすべて生成する」を押してください<br><span style="font-size:11px;display:block;margin-top:4px">生成後、日付をタップすると詳細が表示されます</span></div>`;
+</script>
